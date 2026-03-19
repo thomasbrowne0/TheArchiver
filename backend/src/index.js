@@ -8,8 +8,26 @@ const aiRoutes        = require('./routes/ai')
 
 const app  = express()
 const PORT = process.env.PORT || 4000
+const APP_HOST = process.env.VITE_APP_HOST || process.env.VITE_API_HOST || 'localhost'
+const FRONTEND_PORT = process.env.FRONTEND_PORT || 5173
+const CORS_ORIGINS = (process.env.CORS_ORIGIN ||
+  [
+    `http://${APP_HOST}:${FRONTEND_PORT}`,
+    `https://${APP_HOST}`,
+    `http://${APP_HOST}`,
+  ].join(','))
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
 
-app.use(cors({ origin: '*' }))
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || CORS_ORIGINS.includes(origin)) {
+      return callback(null, true)
+    }
+    return callback(new Error(`CORS blocked for origin: ${origin}`))
+  },
+}))
 app.use(express.json())
 
 app.use('/api/persons',   personsRoutes)
@@ -21,7 +39,10 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }))
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err)
-  res.status(500).json({ error: err.message || 'Internal server error', code: 500 })
+  const statusCode = Number.isInteger(err.statusCode) ? err.statusCode : 500
+  const payload = { error: err.message || 'Internal server error', code: statusCode }
+  if (err.details) payload.details = err.details
+  res.status(statusCode).json(payload)
 })
 
 app.listen(PORT, '0.0.0.0', () => {

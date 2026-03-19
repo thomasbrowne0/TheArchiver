@@ -29,8 +29,14 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       PORT: 4000
+      FRONTEND_PORT: ${FRONTEND_PORT:-5173}
+      VITE_API_HOST: ${VITE_API_HOST}
+      VITE_APP_HOST: ${VITE_APP_HOST:-}
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "4000:4000"
     depends_on:
@@ -45,9 +51,13 @@ services:
     build: ./frontend
     container_name: archiver-frontend
     environment:
-      VITE_API_URL: http://localhost:4000
+      FRONTEND_PORT: ${FRONTEND_PORT:-5173}
+      VITE_API_HOST: ${VITE_API_HOST}
+      VITE_APP_HOST: ${VITE_APP_HOST:-}
+      VITE_ALLOWED_HOSTS: ${VITE_ALLOWED_HOSTS:-}
+      VITE_API_URL: ${VITE_API_URL}
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:${FRONTEND_PORT:-5173}"
     depends_on:
       - backend
     networks:

@@ -1,4 +1,8 @@
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+const BASE = import.meta.env.VITE_API_URL
+
+if (!BASE) {
+  throw new Error('Missing VITE_API_URL. Set it in the frontend environment.')
+}
 
 async function apiFetch(path) {
   const res = await fetch(`${BASE}${path}`)
