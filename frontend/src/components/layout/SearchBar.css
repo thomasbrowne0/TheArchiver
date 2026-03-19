@@ -1,0 +1,91 @@
+.searchbar {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  padding: var(--space-4) var(--space-6);
+}
+
+.searchbar-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.searchbar-input-wrap {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  transition: border-color var(--transition);
+}
+
+.searchbar-input-wrap:focus-within {
+  border-color: var(--color-accent);
+}
+
+.searchbar-icon {
+  color: var(--color-text-muted);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.searchbar-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.searchbar-input::placeholder { color: var(--color-text-dim); }
+
+.searchbar-clear {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition);
+}
+.searchbar-clear:hover { color: var(--color-text); }
+
+.searchbar-status-group {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.searchbar-status-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  transition: all var(--transition);
+}
+
+.searchbar-status-btn:hover {
+  border-color: var(--color-border-light);
+  color: var(--color-text);
+}
+
+.searchbar-status-btn.active {
+  background: var(--color-accent-dim);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.searchbar-status-btn.active.active   { border-color: var(--color-active); color: var(--color-active); background: rgba(0,255,157,0.1); }
+.searchbar-status-btn.absent.active   { border-color: var(--color-absent); color: var(--color-absent); background: rgba(245,158,11,0.1); }
+.searchbar-status-btn.deceased.active { border-color: var(--color-deceased); color: var(--color-deceased); background: rgba(239,68,68,0.1); }

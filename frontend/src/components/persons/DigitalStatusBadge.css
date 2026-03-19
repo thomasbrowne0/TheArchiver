@@ -1,0 +1,25 @@
+.dsb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid currentColor;
+  white-space: nowrap;
+}
+
+.dsb-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.dsb--active   { color: var(--color-active);   background: rgba(0,255,157,0.08); }
+.dsb--absent   { color: var(--color-absent);   background: rgba(245,158,11,0.08); }
+.dsb--deceased { color: var(--color-deceased); background: rgba(239,68,68,0.08); }

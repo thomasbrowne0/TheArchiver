@@ -1,0 +1,37 @@
+.platform-tab {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.pt-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.pt-btn:hover {
+  border-color: var(--color-border-light);
+  color: var(--color-text);
+}
+
+.pt-btn.active {
+  background: rgba(255,255,255,0.04);
+}
+
+.pt-inactive-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-text-dim);
+}
