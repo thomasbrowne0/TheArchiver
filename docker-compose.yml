@@ -1,4 +1,35 @@
 services:
+  ollama:
+    image: ollama/ollama
+    container_name: archiver-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - archiver-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  ollama-init:
+    image: ollama/ollama
+    container_name: archiver-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+    entrypoint: ["/bin/sh", "-c", "ollama pull $OLLAMA_MODEL"]
+    networks:
+      - archiver-net
+    restart: "no"
+
   db:
     image: postgres:16-alpine
     container_name: archiver-db
@@ -29,12 +60,14 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       PORT: 4000
-      OLLAMA_HOST: ${OLLAMA_HOST}
-      OLLAMA_MODEL: ${OLLAMA_MODEL}
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
     ports:
       - "4000:4000"
     depends_on:
       db:
+        condition: service_healthy
+      ollama:
         condition: service_healthy
     networks:
       - archiver-net
@@ -61,3 +94,4 @@ networks:
 
 volumes:
   pgdata:
+  ollama_data:
