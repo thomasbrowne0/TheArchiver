@@ -14,14 +14,17 @@ export default function App() {
 
   function handleAiResult(aiFilter) {
     setAiFilter({
-      statuses:     aiFilter.statuses     ?? [],
-      terms:        aiFilter.terms        ?? [],
-      location:     aiFilter.location     ?? '',
-      no_platforms: aiFilter.no_platforms ?? false,
-      sort_by:      aiFilter.sort_by      ?? null,
-      sort_dir:     aiFilter.sort_dir     ?? 'asc',
-      limit:        aiFilter.limit        ?? null,
-      random:       aiFilter.random       ?? false,
+      statuses:             aiFilter.statuses             ?? [],
+      terms:                aiFilter.terms                ?? [],
+      name_starts_with:     aiFilter.name_starts_with     ?? '',
+      location:             aiFilter.location             ?? '',
+      no_platforms:         aiFilter.no_platforms         ?? false,
+      has_platforms:        aiFilter.has_platforms        ?? [],
+      only_these_platforms: aiFilter.only_these_platforms ?? false,
+      sort_by:              aiFilter.sort_by              ?? null,
+      sort_dir:             aiFilter.sort_dir             ?? 'asc',
+      limit:                aiFilter.limit                ?? null,
+      random:               aiFilter.random               ?? false,
     })
   }
 

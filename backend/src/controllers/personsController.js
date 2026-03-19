@@ -5,9 +5,14 @@ async function listPersons(req, res, next) {
     const result = await pool.query(`
       SELECT
         p.*,
-        COUNT(pp.id)::int AS platform_count
+        COUNT(pp.id)::int AS platform_count,
+        COALESCE(
+          array_agg(pl.name ORDER BY pl.name) FILTER (WHERE pl.name IS NOT NULL),
+          '{}'
+        ) AS platform_names
       FROM persons p
       LEFT JOIN platform_profiles pp ON pp.person_id = p.id
+      LEFT JOIN platforms pl ON pl.id = pp.platform_id
       GROUP BY p.id
       ORDER BY p.archived_at DESC
     `)

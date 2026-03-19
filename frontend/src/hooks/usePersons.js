@@ -2,14 +2,17 @@ import { useState, useEffect, useMemo } from 'react'
 import { getPersons } from '../api/archiveApi'
 
 const EMPTY_AI = {
-  statuses:     [],
-  terms:        [],
-  location:     '',
-  no_platforms: false,
-  sort_by:      null,   // 'name' | 'birth_date' | 'archived_at' | 'platform_count'
-  sort_dir:     'asc',  // 'asc' | 'desc'
-  limit:        null,   // number | null
-  random:       false,
+  statuses:             [],
+  terms:                [],
+  name_starts_with:     '',
+  location:             '',
+  no_platforms:         false,
+  has_platforms:        [],
+  only_these_platforms: false,
+  sort_by:              null,   // 'name' | 'birth_date' | 'archived_at' | 'platform_count'
+  sort_dir:             'asc',  // 'asc' | 'desc'
+  limit:                null,   // number | null
+  random:               false,
 }
 
 export function usePersons() {
@@ -42,6 +45,10 @@ export function usePersons() {
       const matchesAiTerms = aiFilter.terms.length === 0
         || aiFilter.terms.some(t => name.includes(t.toLowerCase()))
 
+      // AI: name starts with letter
+      const matchesNameStarts = !aiFilter.name_starts_with
+        || name.startsWith(aiFilter.name_starts_with.toLowerCase())
+
       // AI: location substring
       const matchesLocation = !aiFilter.location
         || (p.location || '').toLowerCase().includes(aiFilter.location.toLowerCase())
@@ -49,7 +56,18 @@ export function usePersons() {
       // AI: no social media presence
       const matchesNoPlatforms = !aiFilter.no_platforms || (p.platform_count ?? 0) === 0
 
-      return matchesTerm && matchesStatus && matchesAiStatus && matchesAiTerms && matchesLocation && matchesNoPlatforms
+      // AI: platform presence — person must have ALL listed platforms
+      const pNames = p.platform_names || []
+      const matchesHasPlatforms = aiFilter.has_platforms.length === 0
+        || aiFilter.has_platforms.every(pl => pNames.includes(pl))
+
+      // AI: exclusive platform match — person must have ONLY the listed platforms
+      const matchesOnlyPlatforms = !aiFilter.only_these_platforms
+        || (matchesHasPlatforms && pNames.every(pl => aiFilter.has_platforms.includes(pl)))
+
+      return matchesTerm && matchesStatus && matchesAiStatus && matchesAiTerms
+        && matchesNameStarts && matchesLocation && matchesNoPlatforms
+        && matchesHasPlatforms && matchesOnlyPlatforms
     })
 
     // Sort
@@ -87,8 +105,10 @@ export function usePersons() {
 
   const hasAiFilter = aiFilter.statuses.length > 0
     || aiFilter.terms.length > 0
+    || !!aiFilter.name_starts_with
     || !!aiFilter.location
     || aiFilter.no_platforms
+    || aiFilter.has_platforms.length > 0
     || !!aiFilter.sort_by
     || !!aiFilter.limit
     || aiFilter.random
