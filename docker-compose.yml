@@ -29,6 +29,8 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       PORT: 4000
+      OLLAMA_HOST: ${OLLAMA_HOST}
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
     ports:
       - "4000:4000"
     depends_on:

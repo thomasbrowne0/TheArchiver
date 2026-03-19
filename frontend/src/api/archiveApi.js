@@ -14,3 +14,16 @@ export const getPerson     = (id)         => apiFetch(`/api/persons/${id}`)
 export const getPersonPosts = (id, plat) =>
   apiFetch(`/api/persons/${id}/posts${plat ? `?platform=${plat}` : ''}`)
 export const getPlatforms  = ()           => apiFetch('/api/platforms')
+
+export async function postAiQuery(question) {
+  const res = await fetch(`${BASE}/api/ai/query`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question }),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error || `HTTP ${res.status}`)
+  }
+  return res.json()
+}

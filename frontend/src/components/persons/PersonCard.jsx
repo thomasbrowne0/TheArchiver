@@ -6,6 +6,11 @@ const PLATFORM_COLORS = {
   facebook:  '#1877F2',
   twitter:   '#1DA1F2',
   reddit:    '#FF4500',
+  snapchat:  '#FFDD00',
+  linkedin:  '#0A66C2',
+  youtube:   '#FF0000',
+  tiktok:    '#69C9D0',
+  pinterest: '#E60023',
 }
 
 function formatDate(dateStr) {

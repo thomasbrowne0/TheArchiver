@@ -1,24 +1,97 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { getPersons } from '../api/archiveApi'
 
+const EMPTY_AI = {
+  statuses:     [],
+  terms:        [],
+  location:     '',
+  no_platforms: false,
+  sort_by:      null,   // 'name' | 'birth_date' | 'archived_at' | 'platform_count'
+  sort_dir:     'asc',  // 'asc' | 'desc'
+  limit:        null,   // number | null
+  random:       false,
+}
+
 export function usePersons() {
-  const [persons, setPersons]   = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
-  const [filter, setFilter]     = useState({ term: '', status: '' })
+  const [allPersons, setAllPersons] = useState([])
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState(null)
+  const [filter, setFilter]         = useState({ term: '', status: '' })
+  const [aiFilter, setAiFilter]     = useState(EMPTY_AI)
 
   useEffect(() => {
     getPersons()
-      .then(setPersons)
+      .then(setAllPersons)
       .catch(setError)
       .finally(() => setLoading(false))
   }, [])
 
-  const filtered = persons.filter(p => {
-    const matchesTerm   = !filter.term   || p.full_name.toLowerCase().includes(filter.term.toLowerCase())
-    const matchesStatus = !filter.status || p.digital_status === filter.status
-    return matchesTerm && matchesStatus
-  })
+  const persons = useMemo(() => {
+    let list = allPersons.filter(p => {
+      const name = p.full_name.toLowerCase()
 
-  return { persons: filtered, loading, error, filter, setFilter }
+      // Manual search bar
+      const matchesTerm   = !filter.term   || name.includes(filter.term.toLowerCase())
+      const matchesStatus = !filter.status || p.digital_status === filter.status
+
+      // AI: status array (OR)
+      const matchesAiStatus = aiFilter.statuses.length === 0
+        || aiFilter.statuses.includes(p.digital_status)
+
+      // AI: name terms array (OR)
+      const matchesAiTerms = aiFilter.terms.length === 0
+        || aiFilter.terms.some(t => name.includes(t.toLowerCase()))
+
+      // AI: location substring
+      const matchesLocation = !aiFilter.location
+        || (p.location || '').toLowerCase().includes(aiFilter.location.toLowerCase())
+
+      // AI: no social media presence
+      const matchesNoPlatforms = !aiFilter.no_platforms || (p.platform_count ?? 0) === 0
+
+      return matchesTerm && matchesStatus && matchesAiStatus && matchesAiTerms && matchesLocation && matchesNoPlatforms
+    })
+
+    // Sort
+    if (aiFilter.sort_by) {
+      list = [...list].sort((a, b) => {
+        let av, bv
+        switch (aiFilter.sort_by) {
+          case 'name':           av = a.full_name;      bv = b.full_name;      break
+          case 'birth_date':     av = a.birth_date;     bv = b.birth_date;     break
+          case 'archived_at':    av = a.archived_at;    bv = b.archived_at;    break
+          case 'platform_count': av = a.platform_count; bv = b.platform_count; break
+          default: return 0
+        }
+        if (av == null) return 1
+        if (bv == null) return -1
+        const cmp = av < bv ? -1 : av > bv ? 1 : 0
+        return aiFilter.sort_dir === 'desc' ? -cmp : cmp
+      })
+    }
+
+    // Random shuffle before limit
+    if (aiFilter.random) {
+      list = [...list].sort(() => Math.random() - 0.5)
+    }
+
+    // Limit
+    if (aiFilter.limit && aiFilter.limit > 0) {
+      list = list.slice(0, aiFilter.limit)
+    }
+
+    return list
+  }, [allPersons, filter, aiFilter])
+
+  function clearAiFilter() { setAiFilter(EMPTY_AI) }
+
+  const hasAiFilter = aiFilter.statuses.length > 0
+    || aiFilter.terms.length > 0
+    || !!aiFilter.location
+    || aiFilter.no_platforms
+    || !!aiFilter.sort_by
+    || !!aiFilter.limit
+    || aiFilter.random
+
+  return { persons, loading, error, filter, setFilter, aiFilter, setAiFilter, clearAiFilter, hasAiFilter }
 }

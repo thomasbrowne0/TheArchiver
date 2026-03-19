@@ -1,0 +1,175 @@
+.ai-bar {
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(180deg, rgba(0, 255, 157, 0.03) 0%, transparent 100%);
+  padding: var(--space-4) var(--space-6);
+}
+
+.ai-bar-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ai-bar-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-accent);
+}
+
+.ai-bar-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.ai-bar-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ai-bar-input {
+  flex: 1;
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 255, 157, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.ai-bar-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.08);
+}
+
+.ai-bar-input::placeholder { color: var(--color-text-dim); }
+.ai-bar-input:disabled { opacity: 0.5; }
+
+.ai-bar-submit {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: #000;
+  border: none;
+  transition: opacity var(--transition), transform var(--transition);
+  white-space: nowrap;
+  min-width: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-bar-submit:hover:not(:disabled) { opacity: 0.85; }
+.ai-bar-submit:active:not(:disabled) { transform: scale(0.97); }
+.ai-bar-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.ai-bar-clear {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.ai-bar-clear:hover { border-color: var(--color-border-light); color: var(--color-text); }
+
+/* Spinner */
+.ai-bar-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Suggestions */
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ai-suggestion-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(0, 255, 157, 0.15);
+  background: rgba(0, 255, 157, 0.04);
+  color: var(--color-text-muted);
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.ai-suggestion-pill:hover {
+  border-color: rgba(0, 255, 157, 0.4);
+  color: var(--color-accent);
+  background: rgba(0, 255, 157, 0.08);
+}
+
+/* Answer */
+.ai-bar-answer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(0, 255, 157, 0.05);
+  border: 1px solid rgba(0, 255, 157, 0.15);
+  border-radius: var(--radius-md);
+  animation: answer-fade-in 200ms ease;
+}
+
+.ai-bar-answer-icon {
+  color: var(--color-accent);
+  font-size: 14px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.ai-bar-answer-text {
+  font-size: 13px;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* Error */
+.ai-bar-error {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-deceased);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+@keyframes answer-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
