@@ -88,7 +88,7 @@ Wait for it. (~1 second, Ollama is warmed)
 
 Near-instant response.
 
-> *"See the speed difference? The person list is cached for 5 minutes after first load. The AI still processes the query — but the data retrieval is already done. First query: the AI thinks. Every query after: under 50 milliseconds."*
+> *"See the speed difference? The person list is cached for 30 minutes after first load. The AI still processes the query — but the data retrieval is already done. First query: the AI thinks. Every query after: under 50 milliseconds."*
 
 **Query 3:**
 > `Show me the 5 most recently archived people`
@@ -136,7 +136,7 @@ Click a company card. Show the platform tabs and profile data.
 > *"The current approach — load all persons into memory, send them to Ollama — doesn't scale past maybe 100,000 records. The production approach: embed every person profile into a vector database (pgvector or Pinecone). Natural language query → embedding → approximate nearest neighbor search. Sub-10ms at millions of records. The query results are semantically similar profiles, not just keyword matches."*
 
 **The cache:**
-> *"Right now we cache the persons list in-process for 5 minutes. In production: Redis, with event-driven invalidation. A delete triggers a cache clear for that person's ID. A new login adds to the cache. No stale reads, no cold starts."*
+> *"Right now we cache the persons list in-process for 30 minutes. In production: Redis, with event-driven invalidation. A delete triggers a cache clear for that person's ID. A new login adds to the cache. No stale reads, no cold starts."*
 
 **The consent pipeline:**
 > *"GDPR data portability requests have a legal timeline. We'd track each request as a state machine: requested → platform acknowledged → data received → processed → archived. Users see their request status. Platforms that miss the 30-day window get flagged for follow-up."*

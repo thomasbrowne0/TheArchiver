@@ -65,7 +65,7 @@ Immediately run a second query:
 
 It's near-instant.
 
-> *"The person list is cached for 5 minutes. First query: the AI thinks. Every query after: under 50 milliseconds. At scale you'd use Redis and pre-computed embeddings — same idea, millions of records."*
+> *"The person list is cached for 30 minutes. First query: the AI thinks. Every query after: under 50 milliseconds. At scale you'd use Redis and pre-computed embeddings — same idea, millions of records."*
 
 ---
 
