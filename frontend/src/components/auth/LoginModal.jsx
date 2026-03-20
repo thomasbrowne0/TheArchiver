@@ -14,15 +14,15 @@ const PROVIDERS = [
   {
     id:      'hackx',
     name:    'HackX',
-    color:   '#e7e9ea',
-    bgColor: 'rgba(231,233,234,0.08)',
+    color:   '#000000',
+    bgColor: 'rgba(0,0,0,0.15)',
     icon:    '𝕏',
     iconFont:'var(--font-mono)',
     desc:    'Connect with your public identity',
   },
   {
     id:      'hackgle',
-    name:    'Hackgle',
+    name:    'HackTube',
     color:   '#FF0000',
     bgColor: 'rgba(255,0,0,0.10)',
     icon:    '▶',
@@ -102,7 +102,7 @@ export default function LoginModal({ onLogin }) {
         {error && <p className="login-error">{error}</p>}
 
         <p className="login-consent">
-          By connecting, you consent to your profile being permanently archived.
+          By connecting, you consent to your profile being archived.
         </p>
       </div>
     </div>
