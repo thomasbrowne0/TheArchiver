@@ -14,6 +14,7 @@ async function aiQuery(req, res, next) {
       SELECT
         p.id, p.full_name, p.birth_date, p.is_deceased, p.death_date,
         p.location, p.digital_status, p.archived_at, p.notes,
+        p.gender, p.last_active, p.personal_url,
         COUNT(pp.id)::int AS platform_count,
         COALESCE(
           array_agg(pl.name ORDER BY pl.name) FILTER (WHERE pl.name IS NOT NULL),
@@ -36,10 +37,13 @@ async function aiQuery(req, res, next) {
     const personSummaries = persons.map(p => {
       const parts = [
         `- ${p.full_name} (${p.digital_status.toUpperCase()})`,
+        p.gender ? `  Gender: ${p.gender}` : null,
         p.location ? `  Location: ${p.location}` : null,
         p.birth_date ? `  Born: ${new Date(p.birth_date).getFullYear()}` : null,
         p.is_deceased && p.death_date ? `  Died: ${new Date(p.death_date).getFullYear()}` : null,
-        `  Platforms: ${p.platform_names.length > 0 ? p.platform_names.join(', ') : 'none'}`,
+        `  Platforms: ${p.platform_names.length > 0 ? p.platform_names.join(', ') : 'none'} (count: ${p.platform_count})`,
+        p.last_active ? `  Last active: ${p.last_active.toISOString().slice(0, 10)}` : null,
+        p.personal_url ? `  Personal URL: ${p.personal_url}` : null,
         p.notes ? `  Notes: ${p.notes}` : null,
       ].filter(Boolean)
       return parts.join('\n')
@@ -61,12 +65,22 @@ JSON format:
 {
   "answer": "Plain string answer to the question. Include counts or names when relevant.",
   "filter_statuses": [],
+  "filter_status_exclude": [],
   "filter_terms": [],
   "filter_name_starts_with": "",
+  "filter_name_contains": "",
+  "filter_gender": "",
   "filter_location": "",
   "no_platforms": false,
   "has_platforms": [],
   "only_these_platforms": false,
+  "filter_min_platforms": null,
+  "filter_max_platforms": null,
+  "filter_last_active_after": "",
+  "filter_last_active_before": "",
+  "filter_archived_after": "",
+  "filter_archived_before": "",
+  "filter_has_personal_url": null,
   "sort_by": null,
   "sort_dir": "asc",
   "limit": null,
@@ -76,13 +90,23 @@ JSON format:
 Field rules:
 - "answer": plain string only, never a nested object.
 - "filter_statuses": array of zero or more of "active", "absent", "deceased". OR logic. Empty = no filter.
+- "filter_status_exclude": array of statuses to EXCLUDE. Use for negation ("everyone except active"). OR logic with filter_statuses.
 - "filter_terms": array of person name strings to match (partial OK). OR logic. Empty = no filter.
-- "filter_name_starts_with": single letter string — only show people whose name starts with this letter. Empty = no filter. Use this instead of filter_terms for letter-based queries.
-- "filter_location": string to match against location field. Empty string = no filter.
-- "no_platforms": true only if user asks for people with zero social media / no platforms archived.
-- "has_platforms": array of platform slugs the person must have. Valid slugs: instagram, facebook, twitter, reddit, snapchat, linkedin, youtube, tiktok, pinterest. AND logic — person must have ALL listed platforms.
-- "only_these_platforms": true if the user wants people with ONLY the listed platforms and nothing else. Must be used together with has_platforms.
-- "sort_by": null OR one of "name", "birth_date", "archived_at", "platform_count".
+- "filter_name_starts_with": single letter — show people whose full name starts with this letter. Empty = no filter.
+- "filter_name_contains": substring to find anywhere in the full name. Empty = no filter. Use for mid-name searches.
+- "filter_gender": "" | "male" | "female" | "non-binary". Empty = no filter.
+- "filter_location": string to match against location field. Empty = no filter.
+- "no_platforms": true only if user asks for people with zero social media.
+- "has_platforms": array of platform slugs the person must have. Valid slugs: instagram, facebook, twitter, reddit, snapchat, linkedin, youtube, tiktok, pinterest. AND logic.
+- "only_these_platforms": true if user wants people with ONLY those platforms and nothing else.
+- "filter_min_platforms": null OR integer — person must have at least this many platforms.
+- "filter_max_platforms": null OR integer — person must have at most this many platforms.
+- "filter_last_active_after": ISO date string (YYYY-MM-DD) — only people last active on or after this date. Empty = no filter.
+- "filter_last_active_before": ISO date string — only people last active on or before this date. Empty = no filter.
+- "filter_archived_after": ISO date string — only people archived on or after this date. Empty = no filter.
+- "filter_archived_before": ISO date string — only people archived before this date. Empty = no filter.
+- "filter_has_personal_url": null = no filter, true = must have a personal URL, false = must NOT have a personal URL.
+- "sort_by": null OR one of "name", "birth_date", "archived_at", "platform_count", "last_active".
 - "sort_dir": "asc" or "desc".
 - "limit": null OR a positive integer — how many results to show.
 - "random": true if user wants a random selection (shuffle before applying limit).
@@ -172,7 +196,52 @@ User: "absent people from the UK"
 ---
 EXAMPLE 17 — sort oldest first
 User: "show the oldest people in the archive"
-{"answer":"Showing persons sorted oldest to youngest by birth date.","filter_statuses":[],"filter_terms":[],"filter_name_starts_with":"","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"sort_by":"birth_date","sort_dir":"asc","limit":null,"random":false}
+{"answer":"Showing persons sorted oldest to youngest by birth date.","filter_statuses":[],"filter_status_exclude":[],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"","filter_gender":"","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"filter_min_platforms":null,"filter_max_platforms":null,"filter_last_active_after":"","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"","filter_has_personal_url":null,"sort_by":"birth_date","sort_dir":"asc","limit":null,"random":false}
+
+---
+EXAMPLE 18 — gender filter
+User: "show all women in the archive"
+{"answer":"Showing all female persons in the archive.","filter_statuses":[],"filter_status_exclude":[],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"","filter_gender":"female","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"filter_min_platforms":null,"filter_max_platforms":null,"filter_last_active_after":"","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"","filter_has_personal_url":null,"sort_by":null,"sort_dir":"asc","limit":null,"random":false}
+
+---
+EXAMPLE 19 — min platform count
+User: "people with more than 3 platforms"
+{"answer":"Showing persons with more than 3 platforms archived.","filter_statuses":[],"filter_status_exclude":[],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"","filter_gender":"","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"filter_min_platforms":4,"filter_max_platforms":null,"filter_last_active_after":"","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"","filter_has_personal_url":null,"sort_by":null,"sort_dir":"asc","limit":null,"random":false}
+
+---
+EXAMPLE 20 — negation / status exclusion
+User: "everyone except active users"
+{"answer":"Showing all persons who are not active — absent and deceased records.","filter_statuses":[],"filter_status_exclude":["active"],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"","filter_gender":"","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"filter_min_platforms":null,"filter_max_platforms":null,"filter_last_active_after":"","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"","filter_has_personal_url":null,"sort_by":null,"sort_dir":"asc","limit":null,"random":false}
+
+---
+EXAMPLE 21 — has personal URL
+User: "who has a personal website"
+{"answer":"Showing persons with a personal website or URL on file.","filter_statuses":[],"filter_status_exclude":[],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"","filter_gender":"","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"filter_min_platforms":null,"filter_max_platforms":null,"filter_last_active_after":"","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"","filter_has_personal_url":true,"sort_by":null,"sort_dir":"asc","limit":null,"random":false}
+
+---
+EXAMPLE 22 — name contains substring
+User: "find everyone with 'ova' in their name"
+{"answer":"Showing persons whose name contains 'ova'.","filter_statuses":[],"filter_status_exclude":[],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"ova","filter_gender":"","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"filter_min_platforms":null,"filter_max_platforms":null,"filter_last_active_after":"","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"","filter_has_personal_url":null,"sort_by":null,"sort_dir":"asc","limit":null,"random":false}
+
+---
+EXAMPLE 23 — last active filter
+User: "who was last active after October 2024"
+{"answer":"Showing persons whose last recorded activity was after October 2024.","filter_statuses":[],"filter_status_exclude":[],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"","filter_gender":"","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"filter_min_platforms":null,"filter_max_platforms":null,"filter_last_active_after":"2024-10-01","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"","filter_has_personal_url":null,"sort_by":"last_active","sort_dir":"desc","limit":null,"random":false}
+
+---
+EXAMPLE 24 — archived before date
+User: "people added to the archive before 2024"
+{"answer":"Showing persons who were archived before 2024.","filter_statuses":[],"filter_status_exclude":[],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"","filter_gender":"","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"filter_min_platforms":null,"filter_max_platforms":null,"filter_last_active_after":"","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"2024-01-01","filter_has_personal_url":null,"sort_by":null,"sort_dir":"asc","limit":null,"random":false}
+
+---
+EXAMPLE 25 — compound: gender + platform + location
+User: "women from Italy with Instagram"
+{"answer":"Showing female persons from Italy with an Instagram presence.","filter_statuses":[],"filter_status_exclude":[],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"","filter_gender":"female","filter_location":"Italy","no_platforms":false,"has_platforms":["instagram"],"only_these_platforms":false,"filter_min_platforms":null,"filter_max_platforms":null,"filter_last_active_after":"","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"","filter_has_personal_url":null,"sort_by":null,"sort_dir":"asc","limit":null,"random":false}
+
+---
+EXAMPLE 26 — sort by last active
+User: "who was most recently active"
+{"answer":"Showing persons sorted by most recent activity.","filter_statuses":[],"filter_status_exclude":[],"filter_terms":[],"filter_name_starts_with":"","filter_name_contains":"","filter_gender":"","filter_location":"","no_platforms":false,"has_platforms":[],"only_these_platforms":false,"filter_min_platforms":null,"filter_max_platforms":null,"filter_last_active_after":"","filter_last_active_before":"","filter_archived_after":"","filter_archived_before":"","filter_has_personal_url":null,"sort_by":"last_active","sort_dir":"desc","limit":null,"random":false}
 
 ---
 Now answer the user's question using the same JSON structure as the examples above.`
@@ -187,7 +256,7 @@ Now answer the user's question using the same JSON structure as the examples abo
           { role: 'system', content: systemPrompt },
           { role: 'user',   content: question.trim() },
         ],
-        options: { temperature: 0.1 }
+        options: { temperature: 0.1, num_ctx: 16384 }
       })
     })
 
@@ -212,27 +281,40 @@ Now answer the user's question using the same JSON structure as the examples abo
     if (!answer.trim()) answer = 'No answer returned.'
 
     const validStatuses  = new Set(['active', 'absent', 'deceased'])
-    const validSortBy    = new Set(['name', 'birth_date', 'archived_at', 'platform_count'])
+    const validGenders   = new Set(['male', 'female', 'non-binary'])
+    const validSortBy    = new Set(['name', 'birth_date', 'archived_at', 'platform_count', 'last_active'])
     const validPlatforms = new Set(['instagram','facebook','twitter','reddit','snapchat','linkedin','youtube','tiktok','pinterest'])
 
     const nameStartsWith = typeof p.filter_name_starts_with === 'string'
       ? p.filter_name_starts_with.trim().slice(0, 1).toUpperCase()
       : ''
 
+    const toDateStr = v => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) ? v.slice(0, 10) : ''
+
     res.json({
       answer,
       filter: {
-        statuses:             Array.isArray(p.filter_statuses) ? p.filter_statuses.filter(s => validStatuses.has(s)) : [],
-        terms:                Array.isArray(p.filter_terms)    ? p.filter_terms.filter(t => typeof t === 'string' && t.trim()) : [],
-        name_starts_with:     nameStartsWith,
-        location:             typeof p.filter_location === 'string' ? p.filter_location : '',
-        no_platforms:         p.no_platforms === true,
-        has_platforms:        Array.isArray(p.has_platforms) ? p.has_platforms.filter(pl => validPlatforms.has(pl)) : [],
-        only_these_platforms: p.only_these_platforms === true,
-        sort_by:              validSortBy.has(p.sort_by) ? p.sort_by : null,
-        sort_dir:             p.sort_dir === 'desc' ? 'desc' : 'asc',
-        limit:                Number.isInteger(p.limit) && p.limit > 0 ? p.limit : null,
-        random:               p.random === true,
+        statuses:              Array.isArray(p.filter_statuses)      ? p.filter_statuses.filter(s => validStatuses.has(s))       : [],
+        status_exclude:        Array.isArray(p.filter_status_exclude) ? p.filter_status_exclude.filter(s => validStatuses.has(s)) : [],
+        terms:                 Array.isArray(p.filter_terms)          ? p.filter_terms.filter(t => typeof t === 'string' && t.trim()) : [],
+        name_starts_with:      nameStartsWith,
+        name_contains:         typeof p.filter_name_contains === 'string' ? p.filter_name_contains.trim() : '',
+        gender:                validGenders.has(p.filter_gender) ? p.filter_gender : '',
+        location:              typeof p.filter_location === 'string' ? p.filter_location : '',
+        no_platforms:          p.no_platforms === true,
+        has_platforms:         Array.isArray(p.has_platforms) ? p.has_platforms.filter(pl => validPlatforms.has(pl)) : [],
+        only_these_platforms:  p.only_these_platforms === true,
+        min_platforms:         Number.isInteger(p.filter_min_platforms) && p.filter_min_platforms > 0 ? p.filter_min_platforms : null,
+        max_platforms:         Number.isInteger(p.filter_max_platforms) && p.filter_max_platforms >= 0 ? p.filter_max_platforms : null,
+        last_active_after:     toDateStr(p.filter_last_active_after),
+        last_active_before:    toDateStr(p.filter_last_active_before),
+        archived_after:        toDateStr(p.filter_archived_after),
+        archived_before:       toDateStr(p.filter_archived_before),
+        has_personal_url:      p.filter_has_personal_url === true ? true : p.filter_has_personal_url === false ? false : null,
+        sort_by:               validSortBy.has(p.sort_by) ? p.sort_by : null,
+        sort_dir:              p.sort_dir === 'desc' ? 'desc' : 'asc',
+        limit:                 Number.isInteger(p.limit) && p.limit > 0 ? p.limit : null,
+        random:                p.random === true,
       }
     })
   } catch (err) {

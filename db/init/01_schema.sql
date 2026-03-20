@@ -11,7 +11,10 @@ CREATE TABLE persons (
   digital_status TEXT NOT NULL DEFAULT 'active'
                  CHECK (digital_status IN ('active', 'absent', 'deceased')),
   archived_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  notes          TEXT
+  notes          TEXT,
+  gender         TEXT CHECK (gender IN ('male', 'female', 'non-binary')),
+  last_active    DATE,
+  personal_url   TEXT
 );
 
 CREATE TABLE platforms (
