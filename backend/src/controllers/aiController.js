@@ -6,7 +6,7 @@ const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen2.5:14b'
 // ── Persons cache (avoids DB hit on every AI query) ──────────────────────────
 let _personsCache = null
 let _personsCacheAt = 0
-const PERSONS_TTL = 5 * 60 * 1000 // 5 min
+const PERSONS_TTL = 30 * 60 * 1000 // 30 min
 
 async function getPersons() {
   if (_personsCache && Date.now() - _personsCacheAt < PERSONS_TTL) return _personsCache
@@ -33,7 +33,7 @@ async function getPersons() {
 
 // ── Response cache (identical questions skip the LLM entirely) ────────────────
 const _responseCache = new Map()
-const RESPONSE_TTL  = 10 * 60 * 1000 // 10 min
+const RESPONSE_TTL  = 30 * 60 * 1000 // 30 min
 const RESPONSE_MAX  = 100
 
 function getCached(key) {
