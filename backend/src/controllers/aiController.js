@@ -1,7 +1,81 @@
 const pool = require('../db/pool')
 
 const OLLAMA_HOST  = process.env.OLLAMA_HOST  || 'http://host.docker.internal:11434'
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2'
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen2.5:14b'
+
+// ── Persons cache (avoids DB hit on every AI query) ──────────────────────────
+let _personsCache = null
+let _personsCacheAt = 0
+const PERSONS_TTL = 5 * 60 * 1000 // 5 min
+
+async function getPersons() {
+  if (_personsCache && Date.now() - _personsCacheAt < PERSONS_TTL) return _personsCache
+  const result = await pool.query(`
+    SELECT
+      p.id, p.full_name, p.birth_date, p.is_deceased, p.death_date,
+      p.location, p.digital_status, p.archived_at, p.notes,
+      p.gender, p.last_active, p.personal_url,
+      COUNT(pp.id)::int AS platform_count,
+      COALESCE(
+        array_agg(pl.name ORDER BY pl.name) FILTER (WHERE pl.name IS NOT NULL),
+        '{}'
+      ) AS platform_names
+    FROM persons p
+    LEFT JOIN platform_profiles pp ON pp.person_id = p.id
+    LEFT JOIN platforms pl ON pl.id = pp.platform_id
+    GROUP BY p.id
+    ORDER BY p.archived_at DESC
+  `)
+  _personsCache = result.rows
+  _personsCacheAt = Date.now()
+  return _personsCache
+}
+
+// ── Response cache (identical questions skip the LLM entirely) ────────────────
+const _responseCache = new Map()
+const RESPONSE_TTL  = 10 * 60 * 1000 // 10 min
+const RESPONSE_MAX  = 100
+
+function getCached(key) {
+  const entry = _responseCache.get(key)
+  if (entry && Date.now() - entry.t < RESPONSE_TTL) return entry.v
+  _responseCache.delete(key)
+  return null
+}
+
+function setCache(key, value) {
+  if (_responseCache.size >= RESPONSE_MAX) _responseCache.delete(_responseCache.keys().next().value)
+  _responseCache.set(key, { v: value, t: Date.now() })
+}
+
+// ── Context pruning (only send relevant persons to the model) ─────────────────
+const STOP_WORDS = new Set([
+  'who','has','have','the','from','with','and','but','not','for','are','was',
+  'were','show','find','get','give','only','just','people','person','users',
+  'user','list','me','their','its','that','this','all','any','some',
+])
+
+function prunePersons(persons, question) {
+  const q = question.toLowerCase()
+  const needsAll = /\b(all|everyone|total|how many|count|oldest|newest|most|least|random|sort|order)\b/.test(q)
+  if (needsAll) return persons
+
+  const words = q.split(/\W+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w))
+  if (words.length === 0) return persons
+
+  const scored = persons.map(p => {
+    const haystack = [
+      p.full_name, p.location || '', p.gender || '',
+      ...(p.platform_names || []), p.notes || '',
+      p.digital_status,
+    ].join(' ').toLowerCase()
+    return { p, score: words.reduce((s, w) => s + (haystack.includes(w) ? 1 : 0), 0) }
+  })
+
+  const matches = scored.filter(x => x.score > 0).map(x => x.p)
+  // Fall back to all persons if pruning is too aggressive
+  return matches.length > 0 ? matches.slice(0, 60) : persons
+}
 
 async function aiQuery(req, res, next) {
   const { question } = req.body
@@ -9,32 +83,21 @@ async function aiQuery(req, res, next) {
     return res.status(400).json({ error: 'Question is required' })
   }
 
-  try {
-    const result = await pool.query(`
-      SELECT
-        p.id, p.full_name, p.birth_date, p.is_deceased, p.death_date,
-        p.location, p.digital_status, p.archived_at, p.notes,
-        p.gender, p.last_active, p.personal_url,
-        COUNT(pp.id)::int AS platform_count,
-        COALESCE(
-          array_agg(pl.name ORDER BY pl.name) FILTER (WHERE pl.name IS NOT NULL),
-          '{}'
-        ) AS platform_names
-      FROM persons p
-      LEFT JOIN platform_profiles pp ON pp.person_id = p.id
-      LEFT JOIN platforms pl ON pl.id = pp.platform_id
-      GROUP BY p.id
-      ORDER BY p.archived_at DESC
-    `)
+  const cacheKey = question.toLowerCase().trim()
+  const cached = getCached(cacheKey)
+  if (cached) return res.json(cached)
 
-    const persons = result.rows
+  try {
+    const persons = await getPersons()
+    const contextPersons = prunePersons(persons, question)
+
     const statusCounts = {
       active:   persons.filter(p => p.digital_status === 'active').length,
       absent:   persons.filter(p => p.digital_status === 'absent').length,
       deceased: persons.filter(p => p.digital_status === 'deceased').length,
     }
 
-    const personSummaries = persons.map(p => {
+    const personSummaries = contextPersons.map(p => {
       const parts = [
         `- ${p.full_name} (${p.digital_status.toUpperCase()})`,
         p.gender ? `  Gender: ${p.gender}` : null,
@@ -291,12 +354,12 @@ Now answer the user's question using the same JSON structure as the examples abo
 
     const toDateStr = v => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) ? v.slice(0, 10) : ''
 
-    res.json({
+    const responseBody = {
       answer,
       filter: {
-        statuses:              Array.isArray(p.filter_statuses)      ? p.filter_statuses.filter(s => validStatuses.has(s))       : [],
-        status_exclude:        Array.isArray(p.filter_status_exclude) ? p.filter_status_exclude.filter(s => validStatuses.has(s)) : [],
-        terms:                 Array.isArray(p.filter_terms)          ? p.filter_terms.filter(t => typeof t === 'string' && t.trim()) : [],
+        statuses:              Array.isArray(p.filter_statuses)       ? p.filter_statuses.filter(s => validStatuses.has(s))            : [],
+        status_exclude:        Array.isArray(p.filter_status_exclude) ? p.filter_status_exclude.filter(s => validStatuses.has(s))       : [],
+        terms:                 Array.isArray(p.filter_terms)          ? p.filter_terms.filter(t => typeof t === 'string' && t.trim())   : [],
         name_starts_with:      nameStartsWith,
         name_contains:         typeof p.filter_name_contains === 'string' ? p.filter_name_contains.trim() : '',
         gender:                validGenders.has(p.filter_gender) ? p.filter_gender : '',
@@ -304,7 +367,7 @@ Now answer the user's question using the same JSON structure as the examples abo
         no_platforms:          p.no_platforms === true,
         has_platforms:         Array.isArray(p.has_platforms) ? p.has_platforms.filter(pl => validPlatforms.has(pl)) : [],
         only_these_platforms:  p.only_these_platforms === true,
-        min_platforms:         Number.isInteger(p.filter_min_platforms) && p.filter_min_platforms > 0 ? p.filter_min_platforms : null,
+        min_platforms:         Number.isInteger(p.filter_min_platforms) && p.filter_min_platforms > 0  ? p.filter_min_platforms  : null,
         max_platforms:         Number.isInteger(p.filter_max_platforms) && p.filter_max_platforms >= 0 ? p.filter_max_platforms : null,
         last_active_after:     toDateStr(p.filter_last_active_after),
         last_active_before:    toDateStr(p.filter_last_active_before),
@@ -316,7 +379,9 @@ Now answer the user's question using the same JSON structure as the examples abo
         limit:                 Number.isInteger(p.limit) && p.limit > 0 ? p.limit : null,
         random:                p.random === true,
       }
-    })
+    }
+    setCache(cacheKey, responseBody)
+    res.json(responseBody)
   } catch (err) {
     next(err)
   }
