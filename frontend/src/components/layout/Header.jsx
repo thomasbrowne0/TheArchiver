@@ -5,9 +5,12 @@ export default function Header({ count, mode, onModeChange, session, onOpenSetti
     <header className="header">
       <div className="header-inner">
         <div className="header-brand">
-          <span className="header-bracket">[</span>
-          <span className="header-title">THE ARCHIVER</span>
-          <span className="header-bracket">]</span>
+          <div className="header-brand-title">
+            <span className="header-bracket">[</span>
+            <span className="header-title">THE ARCHIVER</span>
+            <span className="header-bracket">]</span>
+          </div>
+          <span className="header-tag">DIGITAL FOOTPRINT ARCHIVE</span>
         </div>
 
         <nav className="header-nav">
@@ -26,8 +29,6 @@ export default function Header({ count, mode, onModeChange, session, onOpenSetti
         </nav>
 
         <div className="header-meta">
-          <span className="header-tag">DIGITAL FOOTPRINT ARCHIVE</span>
-          <span className="header-divider">·</span>
           <span className="header-count">{count ?? '—'} RECORDS</span>
           {session && (
             <>
