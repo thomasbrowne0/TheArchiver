@@ -28,7 +28,7 @@ export default function SearchBar({ filter, onFilterChange }) {
           {STATUS_OPTIONS.map(opt => (
             <button
               key={opt.value}
-              className={`searchbar-status-btn ${filter.status === opt.value ? 'active' : ''} ${opt.value}`}
+              className={`searchbar-status-btn ${filter.status === opt.value ? 'active' : ''} status-${opt.value}`}
               onClick={() => onFilterChange({ ...filter, status: opt.value })}
             >
               {opt.label}

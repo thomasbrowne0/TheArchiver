@@ -86,6 +86,6 @@
   color: var(--color-accent);
 }
 
-.searchbar-status-btn.active.active   { border-color: var(--color-active); color: var(--color-active); background: rgba(0,255,157,0.1); }
-.searchbar-status-btn.absent.active   { border-color: var(--color-absent); color: var(--color-absent); background: rgba(245,158,11,0.1); }
-.searchbar-status-btn.deceased.active { border-color: var(--color-deceased); color: var(--color-deceased); background: rgba(239,68,68,0.1); }
+.searchbar-status-btn.status-active.active   { border-color: var(--color-active);   color: var(--color-active);   background: rgba(0,255,157,0.1); }
+.searchbar-status-btn.status-absent.active   { border-color: var(--color-absent);   color: var(--color-absent);   background: rgba(245,158,11,0.1); }
+.searchbar-status-btn.status-deceased.active { border-color: var(--color-deceased); color: var(--color-deceased); background: rgba(239,68,68,0.1); }
