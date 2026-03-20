@@ -23,3 +23,4 @@
 .dsb--active   { color: var(--color-active);   background: rgba(0,255,157,0.08); }
 .dsb--absent   { color: var(--color-absent);   background: rgba(245,158,11,0.08); }
 .dsb--deceased { color: var(--color-deceased); background: rgba(239,68,68,0.08); }
+.dsb--bankrupt { color: var(--color-bankrupt); background: rgba(147,51,234,0.08); }

@@ -1,13 +1,20 @@
 import './SearchBar.css'
 
-const STATUS_OPTIONS = [
+export const PERSON_STATUS_OPTIONS = [
   { value: '', label: 'ALL STATUS' },
   { value: 'active',   label: 'ACTIVE' },
   { value: 'absent',   label: 'ABSENT' },
   { value: 'deceased', label: 'DECEASED' },
 ]
 
-export default function SearchBar({ filter, onFilterChange }) {
+export const COMPANY_STATUS_OPTIONS = [
+  { value: '', label: 'ALL STATUS' },
+  { value: 'active',   label: 'ACTIVE' },
+  { value: 'absent',   label: 'ABSENT' },
+  { value: 'bankrupt', label: 'BANKRUPT' },
+]
+
+export default function SearchBar({ filter, onFilterChange, statusOptions = PERSON_STATUS_OPTIONS }) {
   return (
     <div className="searchbar">
       <div className="searchbar-inner">
@@ -25,7 +32,7 @@ export default function SearchBar({ filter, onFilterChange }) {
           )}
         </div>
         <div className="searchbar-status-group">
-          {STATUS_OPTIONS.map(opt => (
+          {statusOptions.map(opt => (
             <button
               key={opt.value}
               className={`searchbar-status-btn ${filter.status === opt.value ? 'active' : ''} status-${opt.value}`}

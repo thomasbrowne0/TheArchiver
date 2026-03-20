@@ -387,4 +387,9 @@ Now answer the user's question using the same JSON structure as the examples abo
   }
 }
 
-module.exports = { aiQuery }
+function clearPersonsCache() {
+  _personsCache = null
+  _personsCacheAt = 0
+}
+
+module.exports = { aiQuery, clearPersonsCache }

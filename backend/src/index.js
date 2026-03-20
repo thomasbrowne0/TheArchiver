@@ -5,6 +5,8 @@ const cors    = require('cors')
 const personsRoutes   = require('./routes/persons')
 const platformsRoutes = require('./routes/platforms')
 const aiRoutes        = require('./routes/ai')
+const companiesRoutes = require('./routes/companies')
+const authRoutes      = require('./routes/auth')
 
 const app  = express()
 const PORT = process.env.PORT || 4000
@@ -33,6 +35,8 @@ app.use(express.json())
 app.use('/api/persons',   personsRoutes)
 app.use('/api/platforms', platformsRoutes)
 app.use('/api/ai',        aiRoutes)
+app.use('/api/companies', companiesRoutes)
+app.use('/api/auth',      authRoutes)
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }))
 

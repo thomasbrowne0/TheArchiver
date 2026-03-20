@@ -43,6 +43,40 @@ CREATE TABLE platform_profiles (
   UNIQUE (person_id, platform_id)
 );
 
+CREATE TABLE companies (
+  id             SERIAL PRIMARY KEY,
+  name           TEXT NOT NULL,
+  vat_number     TEXT,
+  company_type   TEXT NOT NULL
+                 CHECK (company_type IN ('corporation', 'startup', 'ngo', 'agency', 'small_business')),
+  industry       TEXT NOT NULL,
+  headquarters   TEXT,
+  website_url    TEXT,
+  digital_status TEXT NOT NULL DEFAULT 'active'
+                 CHECK (digital_status IN ('active', 'absent', 'bankrupt')),
+  archived_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  founded_year   INTEGER,
+  notes          TEXT
+);
+
+CREATE TABLE company_platform_profiles (
+  id              SERIAL PRIMARY KEY,
+  company_id      INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  platform_id     INTEGER NOT NULL REFERENCES platforms(id),
+  username        TEXT NOT NULL,
+  display_name    TEXT,
+  bio             TEXT,
+  avatar_url      TEXT,
+  follower_count  INTEGER,
+  following_count INTEGER,
+  post_count      INTEGER,
+  profile_url     TEXT,
+  is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+  last_seen_at    TIMESTAMPTZ,
+  scraped_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (company_id, platform_id)
+);
+
 CREATE TABLE posts (
   id               SERIAL PRIMARY KEY,
   profile_id       INTEGER NOT NULL REFERENCES platform_profiles(id) ON DELETE CASCADE,

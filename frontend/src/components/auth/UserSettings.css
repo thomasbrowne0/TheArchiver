@@ -1,0 +1,159 @@
+.user-settings {
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 380px;
+  max-width: 480px;
+}
+
+/* Header */
+.us-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.us-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  flex-shrink: 0;
+}
+
+.us-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.us-name {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.us-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--color-text-dim);
+}
+
+/* Sections */
+.us-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.us-section-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--color-text-dim);
+}
+
+.us-section-body {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.us-view-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-dim);
+  transition: all var(--transition);
+  align-self: flex-start;
+}
+.us-view-btn:hover { background: rgba(0,255,157,0.2); }
+
+/* Danger zone */
+.us-danger-section {
+  padding-top: var(--space-5);
+  border-top: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.us-danger-section .us-section-title {
+  color: var(--color-deceased);
+}
+
+.us-delete-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-deceased);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-deceased);
+  border-radius: var(--radius-sm);
+  background: rgba(239, 68, 68, 0.06);
+  transition: all var(--transition);
+  align-self: flex-start;
+}
+.us-delete-btn:hover:not(:disabled) { background: rgba(239, 68, 68, 0.15); }
+.us-delete-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.us-delete-btn--confirm {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.us-confirm-text {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  border-left: 2px solid var(--color-deceased);
+  padding-left: var(--space-3);
+}
+
+.us-confirm-actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.us-cancel-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+.us-cancel-btn:hover:not(:disabled) {
+  border-color: var(--color-border-light);
+  color: var(--color-text);
+}
+
+.us-error {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-deceased);
+}
+
+/* Disconnect */
+.us-logout-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--color-text-dim);
+  padding: var(--space-2) 0;
+  align-self: flex-start;
+  transition: color var(--transition);
+}
+.us-logout-btn:hover { color: var(--color-text-muted); }

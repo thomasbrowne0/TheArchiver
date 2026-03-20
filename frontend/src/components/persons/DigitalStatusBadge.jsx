@@ -4,6 +4,7 @@ const STATUS_MAP = {
   active:   { label: 'ACTIVE',   cls: 'active' },
   absent:   { label: 'ABSENT',   cls: 'absent' },
   deceased: { label: 'DECEASED', cls: 'deceased' },
+  bankrupt: { label: 'BANKRUPT', cls: 'bankrupt' },
 }
 
 export default function DigitalStatusBadge({ status }) {
