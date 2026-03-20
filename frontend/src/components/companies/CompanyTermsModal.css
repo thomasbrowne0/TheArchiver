@@ -1,0 +1,151 @@
+.cterms-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 15, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.cterms-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7);
+}
+
+/* Brand */
+.cterms-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+}
+
+.cterms-bracket {
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cterms-brand-name {
+  font-weight: 600;
+}
+
+/* Headline */
+.cterms-headline {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+/* Sections */
+.cterms-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.cterms-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.cterms-section-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--color-text-dim);
+}
+
+.cterms-section-body {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.65;
+}
+
+/* Email address */
+.cterms-email {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-accent);
+  background: var(--color-accent-dim);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 255, 157, 0.2);
+  letter-spacing: 0.04em;
+}
+
+/* Opt-out button — ghost, less prominent */
+.cterms-optout-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all 180ms ease;
+}
+
+.cterms-optout-btn:hover {
+  border-color: var(--color-border-light);
+  color: var(--color-text);
+}
+
+/* Success message */
+.cterms-success {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-accent);
+  line-height: 1.5;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-accent-dim);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 255, 157, 0.2);
+}
+
+/* Primary CTA */
+.cterms-accept-btn {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-dim);
+  cursor: pointer;
+  transition: all 180ms ease;
+  text-align: center;
+}
+
+.cterms-accept-btn:hover {
+  background: rgba(0, 255, 157, 0.18);
+}

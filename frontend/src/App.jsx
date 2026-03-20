@@ -9,6 +9,7 @@ import CompanyExpanded from './components/profile/CompanyExpanded'
 import AIQueryBar from './components/ai/AIQueryBar'
 import LoginModal from './components/auth/LoginModal'
 import UserSettings from './components/auth/UserSettings'
+import CompanyTermsModal from './components/companies/CompanyTermsModal'
 import { usePersons } from './hooks/usePersons'
 import { useCompanies } from './hooks/useCompanies'
 import { useAuth } from './hooks/useAuth'
@@ -25,6 +26,22 @@ export default function App() {
   const [selectedPersonId, setSelectedPersonId] = useState(null)
   const [selectedCompanyId, setSelectedCompanyId] = useState(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [showCompanyTerms, setShowCompanyTerms] = useState(false)
+
+  function handleModeChange(newMode) {
+    if (newMode === 'companies' && !termsAccepted) {
+      setShowCompanyTerms(true)
+    } else {
+      setMode(newMode)
+    }
+  }
+
+  function handleTermsAccepted() {
+    setTermsAccepted(true)
+    setShowCompanyTerms(false)
+    setMode('companies')
+  }
 
   function handleAiResult(aiFilter) {
     setAiFilter({
@@ -65,7 +82,7 @@ export default function App() {
       <Header
         count={currentCount}
         mode={mode}
-        onModeChange={setMode}
+        onModeChange={handleModeChange}
         session={session}
         onOpenSettings={() => setSettingsOpen(true)}
       />
@@ -116,6 +133,10 @@ export default function App() {
         <Modal onClose={() => setSelectedCompanyId(null)}>
           <CompanyExpanded companyId={selectedCompanyId} />
         </Modal>
+      )}
+
+      {showCompanyTerms && (
+        <CompanyTermsModal onAccept={handleTermsAccepted} />
       )}
 
       {settingsOpen && session && (
